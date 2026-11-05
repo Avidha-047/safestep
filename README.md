@@ -9,6 +9,8 @@ A removable pod in the heel of any shoe, with its own GPS and SIM. A double heel
 
 > Built by Team 12 for the *Innovation and Entrepreneurship* course (Group Assignment A2), BS Data Science & AI, IIM Sambalpur.
 
+![SafeStep working prototype: a double-tap sends an SOS to the campus Command Center](assets/demo.gif)
+
 ![SafeStep hardware concept](assets/SafeStep_Prototype_1_Hardware_3D.png)
 
 ---
