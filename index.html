@@ -950,7 +950,7 @@ canvas#graph{width:100%;height:130px;display:block;margin-top:14px;border-radius
 <!-- ================= DASHBOARD ================= -->
 <section id="dash" class="hide">
   <header><div style="display:flex;align-items:center;gap:16px"><button class="back" onclick="go('home')">←</button><div class="logo">safe<span>step</span></div><div class="ttl">Campus Security · Live overview</div></div>
-    <div style="display:flex;gap:10px;align-items:center"><span class="pill"><i class="dot" id="dLinkDot"></i><span id="dLinkTxt">Connecting…</span></span><button class="btn ghost" style="padding:8px 12px;font-size:13px" onclick="toggleSound()" id="sndBtn">🔔 Sound on</button></div></header>
+    <div style="display:flex;gap:10px;align-items:center"><span class="pill"><i class="dot" id="dLinkDot"></i><span id="dLinkTxt">Connecting…</span></span><button class="btn ghost" style="padding:8px 12px;font-size:13px" onclick="toggleSound()" id="sndBtn">🔇 Turn sound on</button></div></header>
   <aside>
     <div class="pair">
       <div class="eyebrow" style="margin-bottom:8px">Pair a phone</div>
@@ -3480,7 +3480,7 @@ draw.f=0;
 
 
 // ================= DASHBOARD =================
-let dmap=null,pods={},alerts={},stats={can:0},sound=true,dInit=false,audioCtx=null;
+let dmap=null,pods={},alerts={},stats={can:0},sound=false,dInit=false,audioCtx=null;
 const tiles='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 const attrib='© OpenStreetMap contributors © CARTO';
 const dot=(cls)=>L.divIcon({className:'',html:`<div class="${cls}"></div>`,iconSize:[22,22],iconAnchor:[11,11]});
@@ -3537,9 +3537,15 @@ function ack(id){const a=alerts[id];a.state='ack';a.ackAt=Date.now();const s=Mat
   const g=[CAMPUS[0]+.002,CAMPUS[1]-.003];const line=L.polyline([g,[a.lat,a.lng]],{color:'#12a37f',weight:3,dashArray:'6 6'}).addTo(dmap);a.line=line;renderAlerts()}
 function resolveA(id){const a=alerts[id];a.state='done';send({t:'resolve',id});dlog(`${id} resolved.`);a.mk&&dmap.removeLayer(a.mk);a.line&&dmap.removeLayer(a.line);renderAlerts()}
 function demoAlert(){const m={t:'sos',id:'A-'+Math.floor(1000+Math.random()*9000),pod:'P-DEMO',name:'Demo student',kind:'fall',conf:.94,lat:CAMPUS[0]+.011,lng:CAMPUS[1]+.014,real:false};send(m);newAlert(m)}
-function toggleSound(){sound=!sound;$('sndBtn').textContent=sound?'🔔 Sound on':'🔕 Sound off';if(sound)beep()}
-function beep(){if(!sound)return;try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='square';o.connect(g);g.connect(audioCtx.destination);g.gain.value=.06;
-  [0,.25,.5].forEach(d=>{o.frequency.setValueAtTime(880,audioCtx.currentTime+d);o.frequency.setValueAtTime(660,audioCtx.currentTime+d+.12)});o.start();o.stop(audioCtx.currentTime+.75)}catch(e){}}
+function toggleSound(){sound=!sound;const btn=$('sndBtn');btn.textContent=sound?'🔔 Sound ON':'🔇 Turn sound on';btn.style.background=sound?'linear-gradient(135deg,#2fd3a6,#12a37f)':'';btn.style.color=sound?'#fff':'';
+  try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(e){}
+  if(sound)beep(true)}
+function beep(test){if(!sound)return;try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume();
+  const t0=audioCtx.currentTime,g=audioCtx.createGain();g.connect(audioCtx.destination);g.gain.setValueAtTime(0.0001,t0);
+  const n=test?1:4;for(let k=0;k<n;k++){const st=t0+k*0.55;const o=audioCtx.createOscillator();o.type='sawtooth';o.connect(g);
+    o.frequency.setValueAtTime(700,st);o.frequency.linearRampToValueAtTime(1150,st+0.25);o.frequency.linearRampToValueAtTime(700,st+0.5);
+    g.gain.setValueAtTime(0.0001,st);g.gain.exponentialRampToValueAtTime(0.25,st+0.03);g.gain.setValueAtTime(0.25,st+0.45);g.gain.exponentialRampToValueAtTime(0.0001,st+0.52);
+    o.start(st);o.stop(st+0.53)}}catch(e){}}
 
 // ================= SAFEROUTE =================
 let rmap=null,rInit=false,veh=null,trail=null,tripT=null,step=0,offSince=0,routeAlerted=false;
